@@ -1,0 +1,11 @@
+idf_component_register(
+  SRCS
+  "idf-project.cpp"
+  "Adafruit_BME280.cpp"
+  "BH1750.cpp"
+  "DallasTemperature.cpp"
+  "DFRobot_ESP_PH.cpp"
+  "GravityTDS.cpp"
+  "OneWire.cpp"
+  INCLUDE_DIRS
+  ".")

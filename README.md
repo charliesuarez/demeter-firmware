@@ -1,3 +1,3 @@
-# Demeter Backend
+# Demeter Firmware
 
-The Java Spring-based backend using HTTPS and WebSockets.
+The C firmware for the Demeter system.
