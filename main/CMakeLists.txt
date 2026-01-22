@@ -1,11 +1,3 @@
-idf_component_register(
-  SRCS
-  "idf-project.cpp"
-  "Adafruit_BME280.cpp"
-  "BH1750.cpp"
-  "DallasTemperature.cpp"
-  "DFRobot_ESP_PH.cpp"
-  "GravityTDS.cpp"
-  "OneWire.cpp"
-  INCLUDE_DIRS
-  ".")
+idf_component_register(SRCS "main.cpp"
+                       INCLUDE_DIRS "."
+                       REQUIRES nvs_flash esp_wifi esp_http_client esp_timer driver)
