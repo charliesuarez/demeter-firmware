@@ -5,6 +5,9 @@
 #include <string.h>
 #include <math.h>
 
+// Compiler optimization pragmas
+#pragma GCC optimize ("Os")
+
 // ==================
 // FreeRTOS Includes
 // ==================
