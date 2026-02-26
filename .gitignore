@@ -1,19 +1,14 @@
-# ESP-IDF Build Artifacts
-build/
-sdkconfig
-sdkconfig.old
-*.pyc
+*
 
-# IDE Files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# Source Files
+!*.c
+!*.cpp
+!*.h
 
-# Dependencies
-dependencies.lock
-managed_components/
+# Text Files
+!*.txt
+!*.md
+!sdkconfig*
 
-# Logs
-*.log
+# Directories
+!./main/

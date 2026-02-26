@@ -1,6 +1,7 @@
 // ==================
 // Standard C Includes
 // ==================
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -42,9 +43,9 @@
 #include "nvs.h"
 
 // ========================
-//  System Configuration
+// System Configuration
 // ========================
-static const char *TAG = "ESP32_FIRMWARE";
+static const char *TAG = "Demeter";
 
 typedef struct {
   float tds;
@@ -70,7 +71,7 @@ typedef struct {
 } SensorData;
 
 // =====================
-//  Wi-Fi Configuration
+// Wi-Fi Configuration
 // =====================
 #define WIFI_SSID              "YOUR_WIFI_SSID"
 #define WIFI_PASSWORD          "YOUR_WIFI_PASSWORD"
@@ -91,7 +92,7 @@ static bool wifi_connected = false;
 static int s_retry_num     = 0;
 
 // ==================
-//    Bluetooth LE
+// Bluetooth LE
 // ==================
 #define GATTS_SERVICE_UUID   0x00FF
 #define GATTS_CHAR_UUID      0xFF01
@@ -107,33 +108,22 @@ static uint8_t  char_value[100] = {0};
 static bool     ble_connected   = false;
 
 // ==================
-//  I2C Configuration
-// ==================
-#define I2C_MASTER_SCL_IO           22
-#define I2C_MASTER_SDA_IO           21
-#define I2C_MASTER_NUM              I2C_NUM_0
-#define I2C_MASTER_FREQ_HZ          100000
-#define I2C_MASTER_TX_BUF_DISABLE   0
-#define I2C_MASTER_RX_BUF_DISABLE   0
-#define I2C_MASTER_TIMEOUT_MS       1000
-
-// ==================
-//  ADC Configuration
+// ADC Configuration
 // ==================
 static adc_oneshot_unit_handle_t adc1_handle;
 static adc_cali_handle_t adc1_cali_handle = NULL;
 static bool adc_calibrated = false;
 
-// ===============
-//   pH Sensor Configuration
-// ===============
-#define PH_PIN ADC_CHANNEL_6  // GPIO34
-#define ESPADC 4096.0
+// ========================
+// pH Sensor Configuration
+// ========================
+#define PH_PIN     ADC_CHANNEL_6  // GPIO34
+#define ESPADC     4096.0
 #define ESPVOLTAGE 3300
 
 // pH calibration values stored in NVS
 #define PH_NAMESPACE "ph_sensor"
-#define PHVALUEADDR "ph_calib"
+#define PHVALUEADDR  "ph_calib"
 
 typedef struct {
     float acidVoltage;
@@ -142,9 +132,9 @@ typedef struct {
 
 static PHCalibration ph_calib = {2010.0, 1500.0};  // Default calibration values
 
-// ==============================
-//    Water Temperature Sensor Configuration
-// ==============================
+// =======================================
+// Water Temperature Sensor Configuration
+// =======================================
 #define ONE_WIRE_BUS GPIO_NUM_4
 
 // OneWire timing constants (microseconds)
@@ -163,9 +153,9 @@ static PHCalibration ph_calib = {2010.0, 1500.0};  // Default calibration values
 #define DS18B20_CONVERT_T       0x44
 #define DS18B20_READ_SCRATCHPAD 0xBE
 
-// ==================
+// =====================
 // BME280 Configuration
-// ==================
+// =====================
 #define BME280_ADDR 0x76
 
 // BME280 Registers
@@ -207,26 +197,26 @@ typedef struct {
 static BME280_Calib bme280_calib;
 static int32_t t_fine;
 
-// ==================
-//   TDS/EC Sensor Configuration
-// ==================
+// ==============================
+// TDS/EC Sensor Configuration
+// ==============================
 #define TDS_PIN ADC_CHANNEL_7  // GPIO35
 #define VREF    3.3
 #define SCOUNT  30
 
 static float tds_temperature = 25.0;
-static float tds_kvalue = 1.0;
+static float tds_kvalue      =  1.0;
 
-// ==============================
-//  Ultrasonic Distance Sensor Configuration
-// ==============================
+// ==========================================
+// Ultrasonic Distance Sensor Configuration
+// ==========================================
 #define UART_NUM UART_NUM_2
 #define RXD2 GPIO_NUM_16
 #define TXD2 GPIO_NUM_17
 
-// ========================
-//  BH1750 Light Sensor Configuration
-// ========================
+// ====================================
+// BH1750 Light Sensor Configuration
+// ====================================
 #define BH1750_ADDR 0x23
 
 // BH1750 Commands
@@ -234,10 +224,10 @@ static float tds_kvalue = 1.0;
 #define BH1750_RESET      0x07
 #define BH1750_CONT_H_RES 0x10  // Continuous H-Resolution Mode
 
-// ===========================
+// =======================================
 // Dissolved Oxygen Sensor Configuration
-// ===========================
-#define DO_PIN ADC_CHANNEL_5  // GPIO33
+// =======================================
+#define DO_PIN  ADC_CHANNEL_5  // GPIO33
 #define DO_VREF 3300  // mV
 #define ADC_RES 4096
 
@@ -247,7 +237,7 @@ static float tds_kvalue = 1.0;
 #define CAL2_V  1678  // Calibration voltage at 0% (N2 atmosphere)
 
 // ==================
-//  Helper Functions
+// Helper Functions
 // ==================
 
 static void delay_us(uint32_t us) {
@@ -255,42 +245,71 @@ static void delay_us(uint32_t us) {
 }
 
 // ==================
-//  I2C Functions
+// I2C Configuration
+// ==================
+
+#define I2C_MASTER_SCL_IO           22
+#define I2C_MASTER_SDA_IO           21
+#define I2C_MASTER_NUM              I2C_NUM_0
+#define I2C_MASTER_FREQ_HZ          100000
+#define I2C_MASTER_TX_BUF_DISABLE   0
+#define I2C_MASTER_RX_BUF_DISABLE   0
+#define I2C_MASTER_TIMEOUT_MS       1000
+
+// ==================
+// I2C Functions
 // ==================
 
 esp_err_t i2c_master_init(void) {
     i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_MASTER_SDA_IO,
-        .scl_io_num = I2C_MASTER_SCL_IO,
+        .mode          = I2C_MODE_MASTER,
+        .sda_io_num    = I2C_MASTER_SDA_IO,
+        .scl_io_num    = I2C_MASTER_SCL_IO,
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master = {
-            .clk_speed = I2C_MASTER_FREQ_HZ,
-        },
+        .master        = { .clk_speed = I2C_MASTER_FREQ_HZ, },
     };
 
     esp_err_t err = i2c_param_config(I2C_MASTER_NUM, &conf);
     if (err != ESP_OK) return err;
 
-    return i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
+    return
+      i2c_driver_install(I2C_MASTER_NUM,
+			 conf.mode,
+			 I2C_MASTER_RX_BUF_DISABLE,
+			 I2C_MASTER_TX_BUF_DISABLE,
+			 0);
 }
 
 esp_err_t i2c_write_byte(uint8_t dev_addr, uint8_t reg_addr, uint8_t data) {
     uint8_t write_buf[2] = {reg_addr, data};
-    return i2c_master_write_to_device(I2C_MASTER_NUM, dev_addr, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+    return i2c_master_write_to_device(I2C_MASTER_NUM,
+				      dev_addr,
+				      write_buf,
+				      sizeof(write_buf),
+				      I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
 }
 
 esp_err_t i2c_read_bytes(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, size_t len) {
-    return i2c_master_write_read_device(I2C_MASTER_NUM, dev_addr, &reg_addr, 1, data, len, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+    return i2c_master_write_read_device(I2C_MASTER_NUM,
+					dev_addr,
+					&reg_addr,
+					1,
+					data,
+					len,
+					I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
 }
 
 esp_err_t i2c_write_cmd(uint8_t dev_addr, uint8_t cmd) {
-    return i2c_master_write_to_device(I2C_MASTER_NUM, dev_addr, &cmd, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+    return i2c_master_write_to_device(I2C_MASTER_NUM,
+				      dev_addr,
+				      &cmd,
+				      1,
+				      I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
 }
 
 // ==================
-//  ADC Functions
+// ADC Functions
 // ==================
 
 esp_err_t adc_init(void) {
@@ -472,7 +491,7 @@ float read_water_temperature_f(void) {
 }
 
 // ==================
-//  BME280 Functions
+// BME280 Functions
 // ==================
 
 esp_err_t bme280_read_calibration(void) {
@@ -610,7 +629,7 @@ AirQuality read_air_quality(void) {
 }
 
 // ==================
-//  BH1750 Functions
+// BH1750 Functions
 // ==================
 
 esp_err_t bh1750_init(void) {
@@ -636,9 +655,9 @@ float read_lux(void) {
     return (float)level / 1.2;
 }
 
-// ===============
-//   pH Sensor Functions
-// ===============
+// =====================
+// pH Sensor Functions
+// =====================
 
 void ph_load_calibration(void) {
     nvs_handle_t nvs_handle;
@@ -662,9 +681,9 @@ float read_ph(void) {
     return phValue;
 }
 
-// ==================
-//   TDS/EC Sensor Functions
-// ==================
+// ========================
+// TDS/EC Sensor Functions
+// ========================
 
 TDS_EC read_tds_ec(void) {
     TDS_EC result = {0};
@@ -692,9 +711,9 @@ TDS_EC read_tds_ec(void) {
     return result;
 }
 
-// ==============================
-//  Ultrasonic Distance Sensor Functions
-// ==============================
+// =======================================
+// Ultrasonic Distance Sensor Functions
+// =======================================
 
 esp_err_t uart_init(void) {
     uart_config_t uart_config = {
@@ -727,9 +746,9 @@ int read_distance(void) {
     return -1;
 }
 
-// ===========================
+// ====================================
 // Dissolved Oxygen Sensor Functions
-// ===========================
+// ====================================
 
 float read_do_value(void) {
     int adcValue = 0;
@@ -752,7 +771,7 @@ float read_do_value(void) {
 }
 
 // ========================
-//  WiFi Functions
+// WiFi Functions
 // ========================
 
 static void wifi_event_handler(void* arg,
@@ -839,7 +858,7 @@ void wifi_init_sta(void)
 }
 
 // ========================
-//  HTTP Functions
+// HTTP Functions
 // ========================
 
 esp_err_t http_event_handler(esp_http_client_event_t *evt)
@@ -913,7 +932,7 @@ void send_data_via_wifi(SensorData *data)
 }
 
 // ========================
-//  BLE Functions
+// BLE Functions
 // ========================
 
 static void gap_event_handler(esp_gap_ble_cb_event_t event,
@@ -1069,15 +1088,24 @@ void send_data_via_bluetooth(SensorData *data)
   }
 
   char ble_data[100];
-  snprintf(ble_data, sizeof(ble_data),
-           "PH:%.2f,WT:%.2f,AT:%.2f,H:%.2f,TDS:%.2f",
-           data->ph, data->water_temperature, data->air_quality.temperature,
-           data->air_quality.humidity, data->tds_ec.tds);
+  snprintf(ble_data, 
+	   sizeof(ble_data),
+	   "{ \"pH\": %.2f, \"WaterTemp\": %.2f, \"AirTemp\": %.2f, \"Humidity\": %.2f, \"TDS\": %.2f }",
+	   data->ph,
+           data->water_temperature, 
+	   data->air_quality.temperature,
+           data->air_quality.humidity,
+           data->tds_ec.tds);
 
-  esp_ble_gatts_set_attr_value(char_handle, strlen(ble_data), (uint8_t *)ble_data);
+  esp_ble_gatts_set_attr_value(char_handle,
+			       strlen(ble_data),
+                               (uint8_t *)ble_data);
 
-  esp_ble_gatts_send_indicate(gatts_if_global, conn_id_global, char_handle,
-                              strlen(ble_data), (uint8_t *)ble_data, false);
+  esp_ble_gatts_send_indicate(gatts_if_global,
+                              conn_id_global,
+                              char_handle,
+                              strlen(ble_data),
+                              (uint8_t *)ble_data, false);
 
   ESP_LOGI(TAG, "Data sent via BLE: %s", ble_data);
 }
@@ -1121,7 +1149,7 @@ void bluetooth_init(void)
 }
 
 // ========================
-//  Sensor Subsystem
+// Sensor Subsystem
 // ========================
 
 SensorData read_sensor_data(void)
@@ -1136,6 +1164,25 @@ SensorData read_sensor_data(void)
   data.lux              = read_lux();
   data.dissolved_oxygen = read_do_value();
   data.timestamp        = esp_timer_get_time() / 1000000; // Convert to seconds
+
+  return data;
+}
+
+SensorData read_sensor_data_random(void)
+{
+  SensorData data;
+
+  data.ph                      = ((float)esp_random() / (float)UINT32_MAX) *   3.0f +  4.0f;
+  data.water_temperature       = ((float)esp_random() / (float)UINT32_MAX) * 175.0f - 55.0f;
+  data.air_quality.temperature = ((float)esp_random() / (float)UINT32_MAX) * 125.0f - 40.0f;
+  data.air_quality.humidity    = ((float)esp_random() / (float)UINT32_MAX) * 100.0f;
+  data.air_quality.pressure    = ((float)esp_random() / (float)UINT32_MAX) * 100.0f;
+  data.tds_ec.tds              = ((float)esp_random() / (float)UINT32_MAX) * 100.0f;
+  data.tds_ec.ec               = ((float)esp_random() / (float)UINT32_MAX) * 100.0f;
+  data.distance                = ((float)esp_random() / (float)UINT32_MAX) * 100.0f + 50.0f;
+  data.lux                     = ((float)esp_random() / (float)UINT32_MAX) * 100.0f;
+  data.dissolved_oxygen        = ((float)esp_random() / (float)UINT32_MAX) *  20.0f;
+  data.timestamp               = esp_timer_get_time() / 1000000; // Convert to seconds
 
   return data;
 }
@@ -1177,27 +1224,30 @@ void sensor_init(void)
 }
 
 // ============
-//  Main Task
+// Main Task
 // ============
 
 void data_sender_task(void *pvParameters)
 {
   while (1) {
-    SensorData sensor_data = read_sensor_data();
+    SensorData sensor_data = read_sensor_data_random();
 
-    ESP_LOGI(TAG, "Sensor Data: pH=%.2f, WaterTemp=%.2f, AirTemp=%.2f, Humidity=%.2f, TDS=%.2f",
-             sensor_data.ph, sensor_data.water_temperature,
-             sensor_data.air_quality.temperature, sensor_data.air_quality.humidity,
+    ESP_LOGI(TAG, 
+	     "{ \"pH\": %.2f, \"WaterTemp\": %.2f, \"AirTemp\": %.2f, \"Humidity\": %.2f, \"TDS\": %.2f }",
+             sensor_data.ph,
+             sensor_data.water_temperature,
+             sensor_data.air_quality.temperature,
+	     sensor_data.air_quality.humidity,
              sensor_data.tds_ec.tds);
 
     // Send via WiFi
-    send_data_via_wifi(&sensor_data);
+    // send_data_via_wifi(&sensor_data);
 
     // Send via Bluetooth
     send_data_via_bluetooth(&sensor_data);
 
     // Wait 10 seconds before next reading
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
   }
 }
 
@@ -1207,7 +1257,8 @@ extern "C" void app_main(void)
 
   // Initialize NVS
   esp_err_t ret = nvs_flash_init();
-  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
+      ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
     ESP_ERROR_CHECK(nvs_flash_erase());
     ret = nvs_flash_init();
   }
@@ -1217,8 +1268,8 @@ extern "C" void app_main(void)
   sensor_init();
 
   // Initialize WiFi
-  ESP_LOGI(TAG, "Initializing WiFi...");
-  wifi_init_sta();
+  // ESP_LOGI(TAG, "Initializing WiFi...");
+  // wifi_init_sta();
 
   // Initialize Bluetooth
   ESP_LOGI(TAG, "Initializing Bluetooth...");

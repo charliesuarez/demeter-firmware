@@ -4,11 +4,10 @@ This document describes the optimizations made to reduce IRAM usage and binary s
 
 ## Issues Addressed
 
-1. **IRAM Overflow** - Application static IRAM usage exceeded available IRAM
-2. **Binary Size** - Total binary size exceeded partition limits
+1. IRAM Overflow - Application static IRAM usage exceeded available IRAM
+2. Binary Size   - Total binary size exceeded partition limits
 
 ## Optimizations Applied
-
 ### 1. Partition Table (partitions.csv)
 
 Created a custom partition table with larger app partition:
@@ -25,8 +24,8 @@ factory,  app,  factory, 0x10000, 2M,       # 2MB for app (increased)
 - Still leaves 2MB for future OTA updates if needed
 
 ### 2. Compiler Optimizations (sdkconfig.defaults)
-
 #### Size Optimization
+
 ```
 CONFIG_COMPILER_OPTIMIZATION_SIZE=y
 CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_DISABLE=y
@@ -35,6 +34,7 @@ CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_DISABLE=y
 - Removes assertion checks (~10-15% size reduction)
 
 #### Bootloader Optimization
+
 ```
 CONFIG_BOOTLOADER_COMPILER_OPTIMIZATION_SIZE=y
 CONFIG_BOOTLOADER_LOG_LEVEL_WARN=y
@@ -43,6 +43,7 @@ CONFIG_BOOTLOADER_LOG_LEVEL_WARN=y
 - Minimal logging in bootloader
 
 #### Log Level Reduction
+
 ```
 CONFIG_LOG_DEFAULT_LEVEL_WARN=y
 CONFIG_LOG_MAXIMUM_LEVEL_WARN=y
@@ -114,31 +115,35 @@ target_link_libraries(${COMPONENT_LIB} PRIVATE -Wl,--gc-sections)
 - Overrides default optimization level
 
 ## Expected Results
-
 ### IRAM Usage
+
 - **Before**: Exceeded available IRAM
 - **After**: ~70-80% of IRAM (safe margin)
 
 ### Binary Size
+
 - **Before**: Exceeded partition size
 - **After**: ~1.5-1.8MB (fits in 2MB partition)
 
 ### RAM Usage
+
 - **Heap available**: ~150-180KB (sufficient for operations)
 - **Static RAM**: Reduced by ~60KB through WiFi/BT optimizations
 
 ## Trade-offs
-
 ### Performance
+
 - Slightly slower code execution (size vs speed trade-off)
 - Minimal impact on sensor reading (I/O bound operations)
 - WiFi/BLE performance unchanged for our use case
 
 ### Debugging
+
 - Reduced logging (warnings only)
 - Solution: Enable debug logs during development via menuconfig
 
 ### Features
+
 - AMPDU disabled (rarely needed for sensor data)
 - Single BLE connection (sufficient for most scenarios)
 
